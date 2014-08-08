@@ -8,11 +8,14 @@ var express = require("express"),
   flash = require('connect-flash'),
   app = express(),
   OAuth = require('oauth'),
+  async = require('async'),
 	_ = require('lodash');
-
 // Middleware for ejs, grabbing HTML and including static files
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: false}) ); 
+app.use(express.static(__dirname + '/public'));
+
+
 
 // we are going to create a cookie that will store our session data
 // ideally we want this secret to be a string of random numbers 
@@ -27,7 +30,7 @@ app.use(cookieSession( {
   secret: 'thisismysecretkey',
   name: 'session with cookie data',
   // this is in milliseconds
-  maxage: 360000
+  maxage: 3600000000
   })
 );
 
@@ -63,35 +66,84 @@ var oauth = new OAuth.OAuth(
   null,
   'HMAC-SHA1'
 );
+// var data_array = [];
+// var searchBeginningURL = "https://api.twitter.com/1.1/search/tweets.json";
+// var searchFor = "%23got";
+// // var searchURL = searchBeginningURL + "?q=%23GoT&geocode=37.771393,-122.444938,100km&since=2014-08-05&until=2014-08-06&lang=en&count=100&result_type=recent"; //SF coords
+// var aug06url = searchBeginningURL + "?q="+searchFor+"&geocode=34.1664043,-118.1132171,100km&lang=en&since=2014-08-06&until=2014-08-07&count=100&result_type=recent";
+// var aug05url = searchBeginningURL + "?q="+searchFor+"&geocode=34.1664043,-118.1132171,100km&lang=en&since=2014-08-05&until=2014-08-06&count=100&result_type=recent";
+// var aug04url = searchBeginningURL + "?q="+searchFor+"&geocode=34.1664043,-118.1132171,100km&lang=en&since=2014-08-04&until=2014-08-05&count=100&result_type=recent";
+// var aug03url = searchBeginningURL + "?q="+searchFor+"&geocode=34.1664043,-118.1132171,100km&lang=en&since=2014-08-03&until=2014-08-04&count=100&result_type=recent";
+// var aug02url = searchBeginningURL + "?q="+searchFor+"&geocode=34.1664043,-118.1132171,100km&lang=en&since=2014-08-02&until=2014-08-03&count=100&result_type=recent";
+// var aug01url = searchBeginningURL + "?q="+searchFor+"&geocode=34.1664043,-118.1132171,100km&lang=en&since=2014-08-01&until=2014-08-02&count=100&result_type=recent";
 
-var searchBeginningURL = "https://api.twitter.com/1.1/search/tweets.json";
-// var searchURL = searchBeginningURL + "?q=%23GoT&geocode=37.771393,-122.444938,100km&since=2014-08-05&until=2014-08-06&lang=en&result_type=mixed&count=100"; //SF coords
-var searchURL = searchBeginningURL + "?q=%23yolo&geocode=34.1664043,-118.1132171,100km&since=2014-08-04&until=2014-08-05&lang=en&result_type=mixed&count=100";
 
-var getTweets = function (url, callback) {
-    oauth.get(url, null, null, function (e, data, res){
-      var allTweets = JSON.parse(data).statuses;
-//       var allTweets = JSON.parse(data).search_metadata.next_results;
-// 			var secondPg = searchBeginningURL + allTweets;
-      callback(allTweets);
-    });
-  };
+// // &geocode=34.1664043,-118.1132171,100km
+// // &geocode=34.1664043,-118.1132171,100km
+// // &geocode=34.1664043,-118.1132171,100km
+// // &geocode=34.1664043,-118.1132171,100km
+// // &geocode=34.1664043,-118.1132171,100km
+// // &geocode=34.1664043,-118.1132171,100km
 
-getTweets(searchURL, function(x){ 
-	console.log(x);
-	console.log("There are " + x.length + " mazafaken twitts");
+// // lang=en&
+// // lang=en&
+// // lang=en&
+// // lang=en&
+// // lang=en&
+// // lang=en&
 
-});
+// var getTweets = function (url, callback) {
+//     oauth.get(url, null, null, function (e, data, res){
+//       var allTweets = JSON.parse(data).statuses;
+// //       var allTweets = JSON.parse(data).search_metadata.next_results;
+// // 			var secondPg = searchBeginningURL + allTweets;
+//       callback(allTweets);
+//     });
+//   };
 
-// oauth.get(searchURL, null, null, function(e, data, res) {
-//   var tweets= JSON.parse(data).statuses;
-//   var tweetText = _.pluck(tweets, "text")
-//   console.log(tweetText);
-//   // console.log(typeof data)
-//   // console.log(tweets.statuses)
-
+// getTweets(aug06url, function(x){ 
+// 	// console.log(_.pluck(x, "created_at"));
+// 	console.log("There are " + x.length + " twitts for Aug06");
+// 	data_array.push(x.length);
+// 	console.log("the array is now: " + data_array);
 
 // });
+// getTweets(aug05url, function(x){ 
+// 	// console.log(x.created_at);
+// 	console.log("There are " + x.length + " twitts for Aug05");
+// 	data_array.push(x.length);
+// 	console.log("the array is now: " + data_array);
+
+// });
+// getTweets(aug04url, function(x){ 
+// 	// console.log(x);
+// 	console.log("There are " + x.length + " twitts for Aug04");
+// 	data_array.push(x.length);
+// 	console.log("the array is now: " + data_array);
+
+// });
+// getTweets(aug03url, function(x){ 
+// 	// console.log(x);
+// 	console.log("There are " + x.length + " twitts for Aug03");
+// 	data_array.push(x.length);
+// 	console.log("the array is now: " + data_array);
+
+// });
+// getTweets(aug02url, function(x){ 
+// 	// console.log(_.pluck(x, "created_at"));
+// 	console.log("There are " + x.length + " twitts for Aug02");
+// 	data_array.push(x.length);
+// 	console.log("the array is now: " + data_array);
+
+// });
+// getTweets(aug01url, function(x){ 
+// 	// console.log(x);
+// 	console.log("There are " + x.length + " twitts for Aug01");
+// 	data_array.push(x.length);
+// 	console.log("the array is now: " + data_array);
+
+// });
+
 
 
 
@@ -157,6 +209,49 @@ app.get('/logout', function(req,res){
   req.logout();
   res.redirect('/');
 });
+
+//find the tweets and send them to chart.js
+app.post('/search', function(req,res){
+	var tag = req.body.searchTerm;
+	var searchTagUrl= "https://api.twitter.com/1.1/search/tweets.json?q=%23"+tag+"&geocode=34.1664043,-118.1132171,100km&lang=en&count=100&result_type=mixed";
+	var aug06url = searchTagUrl +"&since=2014-08-06&until=2014-08-07",
+			aug05url = searchTagUrl +"&since=2014-08-05&until=2014-08-06",
+			aug04url = searchTagUrl +"&since=2014-08-04&until=2014-08-05",
+			aug03url = searchTagUrl +"&since=2014-08-03&until=2014-08-04",
+			aug02url = searchTagUrl +"&since=2014-08-02&until=2014-08-03",
+			aug01url = searchTagUrl +"&since=2014-08-01&until=2014-08-02";
+	var qry_array = [aug06url,aug05url,aug04url,aug03url,aug02url,aug01url];
+
+
+	// console.log("Showing searched hashtag: " +tag);
+	// console.log("Showing the url array: " + qry_array);
+	var getTweets = function (url, done ) {
+    oauth.get(url, null, null, function (e, data, res){
+		//å	console.log(data)
+      var allTweets = JSON.parse(data).statuses;
+			//console.log(allTweets)
+			//console.log(allTweets.length)
+      done(null, allTweets.length);
+    });
+  };
+
+
+
+	async.map(qry_array, getTweets, function(err, results){
+		console.log("The results are in:", results)
+		res.render("graphresult", {
+			qry_array: qry_array,
+			data_array: results,
+			isAuthenticated: req.isAuthenticated(),
+			user: req.user
+
+		})
+	})
+
+	//console.log(data_array	)
+
+});
+
 
 // catch-all for 404 errors 
 app.get('*', function(req,res){
