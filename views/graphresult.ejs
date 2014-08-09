@@ -3,13 +3,20 @@
 <head>
 	<script type="text/javascript" src="/javascripts/chart.js"></script>
 	<title></title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css">
+    
+    <meta charset="UTF-8">
+
+    <title>Document</title>
 </head>
 <body>
 
 
   
-
-    <h1><%- data_array %></h1> 
 	<%  if (!isAuthenticated){ %>
 		<br>
 		<div class="alert alert-warning">
@@ -17,29 +24,53 @@
 		</div>
 	<%  } else {%>
 
-	<h1>Hello, <%= user.username %> - welcome to our website!</h1>
+	<h1>Showing graph for #<%=tagT %> </h1>
 
 	<a href="/logout" class = "btn btn-danger btn-lg">Log out here</a>
 
 	
 	
-	<canvas id="myChart" width="800" height="400"></canvas>
+	<canvas id="myChart" width="1000" height="400"></canvas>
 
 	<script type="text/javascript">
+    var yAxis = [<%- data_array %>] ;
+    var countY = yAxis.reduce(function(a, b) {
+            return a + b;
+        })
+    var yAxisMult = [];
+    if(countY < 100){
+        for(var i = 0; i < yAxis.length;i++){
+        
+        yAxisMult.push((yAxis[i]+23)*24);
+        };
+    } else {
+        for(var i = 0; i < yAxis.length;i++){
+        yAxisMult.push((yAxis[i]+13)*12);
+    };}
 	var ctx = document.getElementById("myChart").getContext("2d");
 		var data = {
-    labels: ["January", "February", "March", "April", "May", "June"],
+    labels: ["August 2nd", "August 3rd", "August 4th", "August 5th", "August 6th", "August 7th","August8th"],
     datasets: [
-        // {
-        //     label: "My First dataset",
-        //     fillColor: "rgba(220,220,220,0.2)",
-        //     strokeColor: "rgba(220,220,220,1)",
-        //     pointColor: "rgba(220,220,220,1)",
-        //     pointStrokeColor: "#fff",
-        //     pointHighlightFill: "#fff",
-        //     pointHighlightStroke: "rgba(220,220,220,1)",
-        //     data: [65, 59, 80, 81, 56, 55, 40]
-        // },
+              {
+            label: "My First dataset",
+            fillColor: "rgba(220,2,2,0.2)",
+            strokeColor: "rgba(2,2,220,1)",
+            pointColor: "rgba(2,220,2,1)",
+            pointStrokeColor: "#fff",
+            pointHighlightFill: "#fff",
+            pointHighlightStroke: "rgba(220,220,220,1)",
+            data: [95, 21, 50, 70, 34, 10, 75]
+        },
+         {
+            label: "My First dataset",
+            fillColor: "rgba(220,220,220,0.2)",
+            strokeColor: "rgba(220,220,220,1)",
+            pointColor: "rgba(220,220,220,1)",
+            pointStrokeColor: "#fff",
+            pointHighlightFill: "#fff",
+            pointHighlightStroke: "rgba(220,220,220,1)",
+            data: [65, 59, 80, 81, 56, 55, 40]
+        },
         {
             label: "My Second dataset",
             fillColor: "rgba(151,187,205,0.2)",
@@ -48,14 +79,15 @@
             pointStrokeColor: "#fff",
             pointHighlightFill: "#fff",
             pointHighlightStroke: "rgba(151,187,205,1)",
-            data: [29,52,80,100,99,100]
+            data: [28, 48, 40, 19, 86, 27, 90]
         }
     ]
 	};
 
 
 	var myLineChart = new Chart(ctx).Line(data, {
-
+    // Boolean - If we should show the scale at all
+    showScale: true,
     ///Boolean - Whether grid lines are shown across the chart
     scaleShowGridLines : true,
 

@@ -213,7 +213,8 @@ app.get('/logout', function(req,res){
 //find the tweets and send them to chart.js
 app.post('/search', function(req,res){
 	var tag = req.body.searchTerm;
-	var searchTagUrl= "https://api.twitter.com/1.1/search/tweets.json?q=%23"+tag+"&geocode=34.1664043,-118.1132171,100km&lang=en&count=100&result_type=mixed";
+	var digInURLbeinning = "https://api.twitter.com/1.1/search/tweets.json";
+	var searchTagUrl= "https://api.twitter.com/1.1/search/tweets.json?q=%23"+tag+"&geocode=34.1664043,-118.1132171,50km&lang=en&count=50&result_type=mixed";
 	var aug06url = searchTagUrl +"&since=2014-08-06&until=2014-08-07",
 			aug05url = searchTagUrl +"&since=2014-08-05&until=2014-08-06",
 			aug04url = searchTagUrl +"&since=2014-08-04&until=2014-08-05",
@@ -221,32 +222,77 @@ app.post('/search', function(req,res){
 			aug02url = searchTagUrl +"&since=2014-08-02&until=2014-08-03",
 			aug01url = searchTagUrl +"&since=2014-08-01&until=2014-08-02";
 	var qry_array = [aug06url,aug05url,aug04url,aug03url,aug02url,aug01url];
+	
+	
+
+	
+
+	// var nextURL = "";
+	
+
+	
+	var digIn = function(url, done){
+		var nextURL = url;
+		var results = [];
+		var getTweets = function (callback, url) {
+	    oauth.get(url, null, null, function (e, data, res){
+	      var allTweets = JSON.parse(data).statuses;
+				var tweetReq = JSON.parse(data);
+				// console.log("getTweets just ran and got: ",tweetReq);
+				// console.log("Separate blocks: ", _.pluck(allTweets, "created_at"));
+				if('next_results' in JSON.parse(data).search_metadata){
+					nextURL = digInURLbeinning + JSON.parse(data).search_metadata.next_results;
+					results.push(allTweets.length);
+					callback();
+				} else {
+					results.push(allTweets.length);
+					nextURL = "";
+					callback();
+				}
+				console.log("running getTweets, current length of twits array is ", allTweets.length);
+	    });
+		
+    };
+		var count = 0;
+		async.until(
+			function(){return nextURL === ""},
+			function(callback){
+				count++;
+				console.log(count);
+				console.log(nextURL);
+				setTimeout(function(){
+					getTweets(callback, nextURL);
+				},0);
+			}, 
+			function(err){
+				console.log(url, "has the results:", results);
+				console.log("dig array for one day: ",results);
+				var countTw = results.reduce(function(a, b) {
+	    						return a + b;
+								},0);
+				console.log("one pt is(countTw):",countTw);
+				// console.log("dig results are: ", results);
+				done(null, countTw);
+				
+		
+		});
+		
+	};
 
 
-	// console.log("Showing searched hashtag: " +tag);
-	// console.log("Showing the url array: " + qry_array);
-	var getTweets = function (url, done ) {
-    oauth.get(url, null, null, function (e, data, res){
-		//å	console.log(data)
-      var allTweets = JSON.parse(data).statuses;
-			//console.log(allTweets)
-			//console.log(allTweets.length)
-      done(null, allTweets.length);
-    });
-  };
 
 
-
-	async.map(qry_array, getTweets, function(err, results){
-		console.log("The results are in:", results)
+	async.map(qry_array, digIn, function(err, results){
+		console.log("map results(y-axis coords)", results);
 		res.render("graphresult", {
 			qry_array: qry_array,
 			data_array: results,
 			isAuthenticated: req.isAuthenticated(),
-			user: req.user
+			user: req.user,
+			tagT: tag
 
-		})
-	})
+		});
+	});
 
 	//console.log(data_array	)
 
@@ -260,6 +306,4 @@ app.get('*', function(req,res){
 });
 
 
-app.listen(3000, function(){
-  console.log("get this party started on port 3000");  
-});
+app.listen(process.env.PORT || 3000);
